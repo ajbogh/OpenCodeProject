@@ -1,0 +1,8 @@
+bower_components
+node_modules
+src/config
+old
+vendor
+build
+dist
+report

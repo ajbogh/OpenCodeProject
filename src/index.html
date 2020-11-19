@@ -1,59 +1,51 @@
 <!DOCTYPE html>
-<html ng-app="openCodeProject" ng-controller="AppController">
+<html>
 	<head>
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<meta charset="utf-8" />
 		<meta http-equiv="cleartype" content="on" />
 
-		<title ng-bind="pageTitle"></title>
+		<page-title title="The Open Code Project"></page-title>
 
 		<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
 		<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css">
-		<link rel="stylesheet" href="/css/normalize.min.css" type="text/css">
+		<link rel="stylesheet" href="/css/normalize.css" type="text/css">
 		<!-- font awesome from BootstrapCDN -->
-    	<link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+		<link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+		<link rel="stylesheet/less" type="text/css" href="/css/stylesheet.less">
 
-		<link rel="stylesheet" type="text/css" href="/css/stylesheet.min.css">
-
-		<script type="text/javascript">
-			// IE doesn't have the console object if the console's not open
-			// This is a shim to prevent IE errors when people use console.log or other functions.
-			if(!console){
-				console = {};
-				console.log = console.error = console.trace = console.table = console.info = console.memory = console.debug = console.warn = function(){};
-			}
-		</script>
-
-		<!-- Libraries for Display -->
-		<!--<script src="//cdnjs.cloudflare.com/ajax/libs/less.js/1.7.3/less.min.js"></script>-->
-		<!--<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/angularjs/1.3.2/angular.js"></script>
-		<script type="text/javascript" src="//code.angularjs.org/1.3.2/angular-route.js"></script>-->
+		<script src="//cdn.jsdelivr.net/npm/less" ></script>
 
 		<base href="/">
 	</head>
 
 	<body>
 		<nav class="navbar navbar-default" role="navigation">
-			<div class="menubutton"><a href="#/"></a></div>
+			<div class="menubutton"><a href="/"></a></div>
 			<div class="logo">
-				<a href="#/"><img src="/images/logo.svg" /></a>
+				<a href="/" title="Home"><img src="/images/logo.svg" alt="Home" /></a>
 			</div>
 			<div class="nav-container">
-				<ul class="nav navbar-nav">
-					<li><a ui-sref="articles">Articles</a></li>
-					<li><a ui-sref="projects">Projects</a></li>
-					<li><a ui-sref="about">About</a></li>
-				</ul>
+				<nav-bar>
+					<script type="application/json">
+						[
+							{ "href": "/articles", "text": "Articles" },
+							{ "href": "/projects", "text": "Projects" },
+							{ "href": "/about", "text": "About" }
+						]
+					</script>
+				</nav-bar>
 			</div>
 		</nav>
 
-		<div class="main" ng-view>
-			
-		</div>
+		<div id="main" class="main"></div>
 	</body>
 	<!-- Libraries -->
-	<script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
 	<script src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.7.0/moment.min.js"></script>
+	<script src="https://unpkg.com/universal-router/universal-router.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/he/1.2.0/he.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/showdown@1.9.1/dist/showdown.min.js"></script>
 
-	<script src="js/all.min.js"></script>
+	<!-- Main App file -->
+	<script src="/js/app.js" type="module"></script>
 </html>

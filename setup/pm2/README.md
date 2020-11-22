@@ -5,6 +5,7 @@ Quick Start: https://pm2.keymetrics.io/docs/usage/quick-start/
 
 ```
 pm2 start server.js
+pm2 start webhooks/webhook-server.js
 ```
 
 Once started, check the status with PM2

@@ -110,6 +110,7 @@ export default (function() {
           ul {
             list-style-type: none;
             padding-left: 20px;
+            padding-right: 20px;
           }
 
           li {

@@ -32,12 +32,9 @@ app.post('/webhook', (req, res) => {
   }
 
   // get package.json file mtime
-  const packageStats = fs.statSync('../package.json')
-  const packageMTime = packageStats.mtime;
   const scriptDir = __dirname;
-  console.log('Current directory: ', process.cwd());
-  process.chdir('../');
-  console.log('Changed directory to: ', process.cwd());
+  const packageStats = fs.statSync(`${scriptDir}/../package.json`);
+  const packageMTime = packageStats.mtime;
 
   console.log("Running `git pull`");
   const child = exec('git pull', function (error, stdout, stderr) {
@@ -57,7 +54,7 @@ app.post('/webhook', (req, res) => {
     }
 
     // perform an npm install if package.json changed
-    const newPackageStats = fs.statSync('./package.json')
+    const newPackageStats = fs.statSync(`${scriptDir}/../package.json`)
     const newPackageMTime = newPackageStats.mtime;
 
     if(newPackageMTime.toString() !== packageMTime.toString()) {
@@ -73,15 +70,12 @@ app.post('/webhook', (req, res) => {
 
         if (error !== null) {
           console.log('exec error:', error);
-          process.chdir(scriptDir);
           res.status(400).end();
           return;
         }
       });
     }
     
-    console.log('Current directory: ', process.cwd());
-    process.chdir(scriptDir);
     res.status(200).end();
   });
 });

@@ -2,6 +2,10 @@
   "name": "opencodeproject.com",
   "version": "0.0.1",
   "description": "Website for the Open Code Project",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:ajbogh/OpenCodeProject.git"
+  },
   "main": "index.js",
   "author": "Allan Bogh",
   "license": "MIT",

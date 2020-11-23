@@ -1,7 +1,11 @@
+const fs = require('fs');
 const express = require('express');
 const bodyParser = require('body-parser')
 const app = express();
 const port = 3001;
+const allowedUsers = require('./config/webhook-users.js');
+const exec = require('child_process').exec;
+const process = require('process');
 
 // parse application/x-www-form-urlencoded
 app.use(bodyParser.urlencoded({ extended: false }))
@@ -14,7 +18,70 @@ app.listen(port, () => {
 });
 
 app.post('/webhook', (req, res) => {
-  const details = res.json(req.body);
-  console.log(req.body);
-  res.status(200).end();
+  const details = req.body;
+  const { login, id, html_url } = details.sender;
+
+  const isUserAllowed = !!allowedUsers.find(user => {
+    return user.login === login && user.id === id && user.html_url === html_url;
+  });
+
+  if(!isUserAllowed) {
+    console.log("Git push ignored, user not allowed to deploy:", login, id, html_url);
+    res.status(401).end();
+    return;
+  }
+
+  // get package.json file mtime
+  const packageStats = fs.statSync('../package.json')
+  const packageMTime = packageStats.mtime;
+  const scriptDir = __dirname;
+  console.log('Current directory: ', process.cwd());
+  process.chdir('../');
+  console.log('Changed directory to: ', process.cwd());
+
+  console.log("Running `git pull`");
+  const child = exec('git pull', function (error, stdout, stderr) {
+    if(stdout !== '') {
+      console.log('stdout:', stdout);
+    }
+    
+    if(stderr !== '') {
+      console.log('stderr:', stderr);
+    }
+
+    if (error !== null) {
+      console.log('exec error:', error);
+      process.chdir(scriptDir);
+      res.status(400).end();
+      return;
+    }
+
+    // perform an npm install if package.json changed
+    const newPackageStats = fs.statSync('./package.json')
+    const newPackageMTime = newPackageStats.mtime;
+
+    if(newPackageMTime.toString() !== packageMTime.toString()) {
+      console.log("Running `npm install`");
+      const child = exec('npm install', function (error, stdout, stderr) {
+        if(stdout !== '') {
+          console.log('stdout:', stdout);
+        }
+
+        if(stderr !== '') {
+          console.log('stderr:', stderr);
+        }
+
+        if (error !== null) {
+          console.log('exec error:', error);
+          process.chdir(scriptDir);
+          res.status(400).end();
+          return;
+        }
+      });
+    }
+    
+    console.log('Current directory: ', process.cwd());
+    process.chdir(scriptDir);
+    res.status(200).end();
+  });
 });

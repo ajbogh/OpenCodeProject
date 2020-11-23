@@ -19,7 +19,29 @@ app.listen(port, () => {
 app.use(express.static('src'));
 
 app.get('/api/articles', (req, res) => {
-  res.json(mockArticles);
+  // TODO: make this a database call
+  const { page = 0, limit = 10, sortBy = 'date', order = 'ASC' } = req.query;
+  const totalArticles = mockArticles.length;
+
+  let sortedArticles = mockArticles.sort((a, b) => {
+    return a[sortBy].localeCompare(b[sortBy], undefined, {ignorePunctuation: true});
+  });
+
+  if(order === 'DESC') {
+    sortedArticles.reverse();
+  }
+
+  sortedArticles = sortedArticles.slice(page * limit, (page * limit) + limit);
+
+  res.json({
+    articles: sortedArticles,
+    page, 
+    limit,
+    order,
+    sortBy,
+    count: sortedArticles.length,
+    total: totalArticles,
+  });
 });
 
 app.get('/api/articles/:id', (req, res) => {

@@ -12,15 +12,13 @@ export default (function() {
       // establish prototype chain
       super();
 
-      this.attachShadow({ mode: "open" });
-
       this.converter = new showdown.Converter(),
 
       console.log('----articles view', this.articles);
       setPageTitle({ prepend: 'Articles' });
 
       this.setupEventListeners();
-      this.fetchArticles();
+      this.fetchData();
       this.render(this);
     }
 
@@ -31,14 +29,14 @@ export default (function() {
         this.total =  event.detail.total;
         this.render(this);
 
-        this.shadowRoot.querySelectorAll('.article-link').forEach(articleLink => {
+        this.querySelectorAll('.article-link').forEach(articleLink => {
           console.log('enabling hyperlink');
           enableSPAHyperlink(articleLink);
         });
       });
-  }
+    }
 
-    async fetchArticles() {
+    async fetchData() {
       this.setAttribute('loading', true);
       const response = await fetch('/api/articles?sortBy=date&order=DESC');
       const json = await response.json();
@@ -60,13 +58,15 @@ export default (function() {
       titleElem.innerText = "Articles";
 
       const ul = document.createElement('ul');
+      ul.classList.add('articles-list');
 
       (el.articles || []).forEach(article => {
         const li = document.createElement('li');
+        li.classList.add('article-list-item');
         li.innerHTML =  `
-          <h2><a class="article-link" href="/articles/${article.id}">${he.encode(article.title)}</a></h2>
-          <div class="author">Author: ${article.author}</div>
-          <div class="date">Updated on: ${(new Date(article.date)).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}</div>
+          <h2 class="article-title"><a class="article-link" href="/articles/${article.id}">${he.encode(article.title)}</a></h2>
+          <div class="article-author">Author: ${article.author}</div>
+          <div class="article-date">Updated on: ${(new Date(article.date)).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}</div>
           <div>${this.converter.makeHtml(article.markdown)}</div>
         `;
 
@@ -74,24 +74,14 @@ export default (function() {
       });
 
       const totalsElem = document.createElement('div');
-      totalsElem.classList.add('totals');
+      totalsElem.classList.add('articles-totals');
       totalsElem.innerText = `Total articles: ${this.total}`;
 
-      el.shadowRoot.innerHTML = `
+      el.innerHTML = `
         <style>
-          h2 {
+          h2.article-title {
             margin-top: 12px;
             margin-bottom: 2px;
-          }
-
-          a, a:link, a:visited {
-            color: #05ad9c;
-            text-decoration: none;
-          }
-
-          a:focus, a:hover, a:active {
-            color: #007f72;
-            text-decoration: underline;
           }
 
           a.article-link {
@@ -103,17 +93,17 @@ export default (function() {
             color: #007f72;
           }
 
-          .date {
+          .article-date {
             margin-bottom: 10px;
           }
 
-          ul {
+          ul.articles-list {
             list-style-type: none;
             padding-left: 20px;
             padding-right: 20px;
           }
 
-          li {
+          li.article-list-item {
             box-shadow: 0px 0px 12px rgba(0, 0, 0, .08);
             border-radius: 3px;
             margin-bottom: 25px;
@@ -121,18 +111,14 @@ export default (function() {
             padding: 10px;
           }
 
-          .totals {
+          .articles-totals {
             margin-top: 25px;
           }
         </style>
       `;
-      el.shadowRoot.appendChild(titleElem);
-      el.shadowRoot.appendChild(ul);
-      el.shadowRoot.appendChild(totalsElem);
-      // el.shadowRoot.innerHTML = `
-      //   <div>Articles${el.id ? `: ${el.id}` : ''}</div>
-      //   <pre>${JSON.stringify(el.articles, null, 2)}</pre>
-      // `;
+      el.appendChild(titleElem);
+      el.appendChild(ul);
+      el.appendChild(totalsElem);
     }
   }
 

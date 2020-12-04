@@ -1,0 +1,3 @@
+[submodule "node-image-farmer"]
+	path = node-image-farmer
+	url = git@github.com:ajbogh/node-image-farmer.git

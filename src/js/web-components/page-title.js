@@ -2,11 +2,21 @@
 
 export default (function() {
   class PageTitle extends HTMLElement {
+    static get observedAttributes() {
+      return ['title', 'prepend', 'append', 'separator'];
+    }
+
     constructor() {
       // establish prototype chain
       super();
 
+      this.style.display = 'none';
+
       this.writeTitle()
+    }
+
+    attributeChangedCallback(name, oldValue, newValue) {
+      this.writeTitle();
     }
 
     writeTitle() {
@@ -44,25 +54,6 @@ export default (function() {
     get separator() {
       return this.getAttribute('separator') || '-';
     }
-
-    static get observedAttributes() {
-      return ['title', 'prepend', 'append', 'separator'];
-    }
-    
-    attributeChangedCallback(name, oldValue, newValue) {
-      this.writeTitle();
-    }
-
-    //TODO: observe changes to the inputs
-    // static get observedAttributes() {
-    //   return ["filter"];
-    // }  
-    
-    // attributeChangedCallback(name, oldValue, newValue) {
-    //   if (oldValue === newValue) {
-        //   return;
-        // }
-    // }
   }
 
   // let the browser know about the custom element

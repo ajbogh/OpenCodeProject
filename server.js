@@ -12,7 +12,7 @@ function send404(req, res) {
   res.end('nothing here!');
 }
 
-app.listen(port, () => {
+const server = app.listen(port, () => {
   console.log(`Listening at http://localhost:${port}`)
 });
 
@@ -44,6 +44,21 @@ app.get('/api/articles', (req, res) => {
   });
 });
 
+app.get('/api/categories', (req, res) => {
+  // TODO: make this a database call
+  const categoryMap = {};
+
+  mockArticles.forEach(({ category }) => {
+    if(categoryMap[category]) {
+      categoryMap[category]++;
+    } else{
+      categoryMap[category] = 1;
+    }
+  });
+
+  res.json(categoryMap);
+});
+
 app.get('/api/articles/:id', (req, res) => {
   res.json(mockArticles.find(article => +article.id === +req.params.id));
 });
@@ -54,3 +69,15 @@ app.get('*', (req, res) => {
 
 app.use(send404); // catchall overrides need for 404
 app.use(compression());
+
+// Do graceful shutdown
+function shutdown() {
+  console.log('SIGTERM signal received: closing HTTP server');
+  server.close(() => {
+    console.log('HTTP server closed')
+  });
+}
+
+process.on('SIGTERM', shutdown);
+process.on('SIGINT', shutdown);
+process.on('exit', shutdown);

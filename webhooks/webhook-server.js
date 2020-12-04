@@ -6,6 +6,20 @@ const port = 3001;
 const allowedUsers = require('./config/webhook-users.js');
 const exec = require('child_process').exec;
 const process = require('process');
+let githubWebHook  = '';
+
+try {
+  const secrets = require('../config/secrets.js');
+  githubWebHook = secrets.githubWebHook;
+} catch (e) {
+  console.error('Could not find the `config/secrets.js` file. Make sure to copy the config/secrets.example.js file and configure your secrets.');
+  process.exit();
+}
+
+if(githubWebHook === '') {
+  console.error('The github webhook secret is not defined. Please add a secret to your Github project\'s webhooks settings and copy it into the `config/secrets.js` file.');
+  process.exit();
+}
 
 // parse application/x-www-form-urlencoded
 app.use(bodyParser.urlencoded({ extended: false }))
@@ -18,6 +32,16 @@ app.listen(port, () => {
 });
 
 app.post('/webhook', (req, res) => {
+  const xHubSignature = req.header('X-Hub-Signature');
+  const host = req.header['X-Forwarded-Host'] || req.get('host');
+  const origin = req.header['X-Forwarded-Origin'] || req.get('origin');
+  const ip = req.header['X-Forwarded-For'] || req.connection.remoteAddress;
+
+  if(xHubSignature !== githubWebHook) {
+    console.error(`The X-Hub-Signature does not match: ${xHubSignature}, host: ${host}, origin: ${origin}`);
+    res.status(401).end();
+  }
+
   const details = req.body;
   const { login, id, html_url } = details.sender;
 

@@ -3,7 +3,7 @@ import { enableSPAHyperlink } from '../util/link-util.js';
 import { setPageTitle } from '../util/title.js';
 
 export default (function() {
-  class ArticlesView extends HTMLElement {
+  class CategoryView extends HTMLElement {
     static get observedAttributes() {
       return ['loading'];
     }
@@ -14,8 +14,8 @@ export default (function() {
 
       this.converter = new showdown.Converter(),
 
-      console.log('----articles view', this.articles);
-      setPageTitle({ prepend: 'Articles' });
+      console.log('----category view');
+      setPageTitle({ prepend: '' });
 
       this.setupEventListeners();
       this.fetchData();
@@ -23,24 +23,24 @@ export default (function() {
     }
 
     setupEventListeners() {
-      this.addEventListener("articles-loaded", (event) => {
-        console.log('---articles-loaded', event);
-        this.articles =  event.detail.articles;
+      this.addEventListener("category-loaded", (event) => {
+        console.log('---category-loaded', event);
+        this.posts =  event.detail.posts;
         this.total =  event.detail.total;
         this.render(this);
 
-        this.querySelectorAll('.article-link').forEach(articleLink => {
+        this.querySelectorAll('.category-link').forEach(postLink => {
           console.log('enabling hyperlink');
-          enableSPAHyperlink(articleLink);
+          enableSPAHyperlink(postLink);
         });
       });
     }
 
     async fetchData() {
       this.setAttribute('loading', true);
-      const response = await fetch('/api/articles?sortBy=date&order=DESC');
+      const response = await fetch(`/api/posts?sortBy=date&order=DESC&category=${this.category}`);
       const json = await response.json();
-      this.dispatchEvent(new CustomEvent('articles-loaded', { detail: json }));
+      this.dispatchEvent(new CustomEvent('category-loaded', { detail: json }));
       this.setAttribute('loading', false);
       return json;
     }
@@ -49,61 +49,61 @@ export default (function() {
       this.render(this);
     }
 
-    get id() {
-      return this.getAttribute('id') || undefined;
+    get category() {
+      return this.getAttribute('category') || undefined;
     }
 
     render(el) {
       const titleElem = document.createElement('h1');
-      titleElem.innerText = "Articles";
+      titleElem.innerText = this.category;
 
       const ul = document.createElement('ul');
-      ul.classList.add('articles-list');
+      ul.classList.add('posts-list');
 
-      (el.articles || []).forEach(article => {
+      (el.posts || []).forEach(post => {
         const li = document.createElement('li');
-        li.classList.add('article-list-item');
+        li.classList.add('post-list-item');
         li.innerHTML =  `
-          <h2 class="article-title"><a class="article-link" href="/articles/${article.id}">${he.encode(article.title)}</a></h2>
-          <div class="article-author">Author: ${article.author}</div>
-          <div class="article-date">Updated on: ${(new Date(article.date)).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}</div>
-          <div>${this.converter.makeHtml(article.markdown)}</div>
+          <h2 class="post-title"><a class="post-link" href="/category/${encodeURIComponent(this.category)}/${post.id}">${he.encode(post.title)}</a></h2>
+          <div class="post-author">Author: ${post.author}</div>
+          <div class="post-date">Updated on: ${(new Date(post.date)).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}</div>
+          <div>${this.converter.makeHtml(post.markdown)}</div>
         `;
 
         ul.appendChild(li);
       });
 
       const totalsElem = document.createElement('div');
-      totalsElem.classList.add('articles-totals');
-      totalsElem.innerText = `Total articles: ${this.total}`;
+      totalsElem.classList.add('posts-totals');
+      totalsElem.innerText = `Total ${this.category.toLowerCase()}: ${this.total}`;
 
       el.innerHTML = `
         <style>
-          h2.article-title {
+          h2.post-title {
             margin-top: 12px;
             margin-bottom: 2px;
           }
 
-          a.article-link {
+          a.post-link {
             text-decoration: none;
             color: #000;
           }
 
-          a.article-link:hover {
+          a.post-link:hover {
             color: #007f72;
           }
 
-          .article-date {
+          .post-date {
             margin-bottom: 10px;
           }
 
-          ul.articles-list {
+          ul.posts-list {
             list-style-type: none;
             padding-left: 20px;
             padding-right: 20px;
           }
 
-          li.article-list-item {
+          li.post-list-item {
             box-shadow: 0px 0px 12px rgba(0, 0, 0, .08);
             border-radius: 3px;
             margin-bottom: 25px;
@@ -111,7 +111,7 @@ export default (function() {
             padding: 10px;
           }
 
-          .articles-totals {
+          .posts-totals {
             margin-top: 25px;
           }
         </style>
@@ -123,5 +123,5 @@ export default (function() {
   }
 
   // let the browser know about the custom element
-  customElements.define('articles-view', ArticlesView);
+  customElements.define('category-view', CategoryView);
 })();

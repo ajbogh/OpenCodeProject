@@ -16,7 +16,17 @@
 		<link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
 		<link rel="stylesheet/less" type="text/css" href="/css/stylesheet.less">
 
-		<script src="//cdn.jsdelivr.net/npm/less" ></script>
+		<script src="//cdn.jsdelivr.net/npm/less" defer ></script>
+			<!-- Libraries -->
+		<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" defer integrity="sha256-4+XzXVhsDmqanXGHaHvgh1gMQKX40OUvDEBTu8JcmNs=" crossorigin="anonymous"></script>
+		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" defer integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+		<script src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.7.0/moment.min.js" defer></script>
+		<script src="//unpkg.com/universal-router/universal-router.min.js" defer></script>
+		<script src="//cdnjs.cloudflare.com/ajax/libs/he/1.2.0/he.min.js" defer></script>
+		<script src="//cdn.jsdelivr.net/npm/showdown@1.9.1/dist/showdown.min.js" defer></script>
+
+		<!-- Main App file -->
+		<script src="/js/app.js" defer type="module"></script>
 
 		<base href="/">
 	</head>
@@ -48,13 +58,4 @@
 		</div>
 		<footer class="row"></footer>
 	</body>
-	<!-- Libraries -->
-	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
-	<script src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.7.0/moment.min.js"></script>
-	<script src="//unpkg.com/universal-router/universal-router.min.js"></script>
-	<script src="//cdnjs.cloudflare.com/ajax/libs/he/1.2.0/he.min.js"></script>
-	<script src="//cdn.jsdelivr.net/npm/showdown@1.9.1/dist/showdown.min.js"></script>
-
-	<!-- Main App file -->
-	<script src="/js/app.js" type="module"></script>
 </html>

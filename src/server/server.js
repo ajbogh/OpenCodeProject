@@ -1,7 +1,8 @@
 const compression = require('compression');
 const express = require('express');
 const path = require('path');
-const mockArticles = require('./mocks/articles.js');
+const mockArticles = require('../../mocks/articles.js');
+const Logger = require('./logger.js')
 
 const app = express();
 const port = 3000;
@@ -16,31 +17,42 @@ const server = app.listen(port, () => {
   console.log(`Listening at http://localhost:${port}`)
 });
 
-app.use(express.static('src'));
+app.use((req, res, next) => {
+  Logger.log(`Recieved ${req.method} ${req.url}`);
+  next();
+});
 
-app.get('/api/articles', (req, res) => {
+app.use('/', express.static(path.join(__dirname, '/../public')));
+
+app.get('/api/posts', (req, res) => {
   // TODO: make this a database call
-  const { page = 0, limit = 10, sortBy = 'date', order = 'ASC' } = req.query;
-  const totalArticles = mockArticles.length;
+  const { page = 0, limit = 10, sortBy = 'date', order = 'ASC', category } = req.query;
+  const totalPosts = mockArticles.length;
 
-  let sortedArticles = mockArticles.sort((a, b) => {
+  let sortedPosts = mockArticles.sort((a, b) => {
     return a[sortBy].localeCompare(b[sortBy], undefined, {ignorePunctuation: true});
   });
 
   if(order === 'DESC') {
-    sortedArticles.reverse();
+    sortedPosts.reverse();
   }
 
-  sortedArticles = sortedArticles.slice(page * limit, (page * limit) + limit);
+  sortedPosts = sortedPosts.slice(page * limit, (page * limit) + limit);
+
+  console.log(category, sortedPosts);
+
+  if(category) {
+    sortedPosts  = sortedPosts.filter(article => article.category === category);
+  }
 
   res.json({
-    articles: sortedArticles,
+    posts: sortedPosts,
     page, 
     limit,
     order,
     sortBy,
-    count: sortedArticles.length,
-    total: totalArticles,
+    count: sortedPosts.length,
+    total: totalPosts,
   });
 });
 
@@ -59,25 +71,25 @@ app.get('/api/categories', (req, res) => {
   res.json(categoryMap);
 });
 
-app.get('/api/articles/:id', (req, res) => {
+app.get('/api/posts/:id', (req, res) => {
   res.json(mockArticles.find(article => +article.id === +req.params.id));
 });
 
 app.get('*', (req, res) => {
-  res.sendFile(path.resolve(__dirname, 'src/index.html'));
+  res.sendFile(path.resolve(__dirname, '../index.html'));
 });
 
 app.use(send404); // catchall overrides need for 404
 app.use(compression());
 
 // Do graceful shutdown
-function shutdown() {
-  console.log('SIGTERM signal received: closing HTTP server');
+function shutdown(type) {
+  console.log(`${type} signal received: closing HTTP server`);
   server.close(() => {
     console.log('HTTP server closed')
   });
 }
 
-process.on('SIGTERM', shutdown);
-process.on('SIGINT', shutdown);
-process.on('exit', shutdown);
+process.on('SIGTERM', () => shutdown('SIGTERM'));
+process.on('SIGINT', () => shutdown('SIGINT'));
+process.on('exit', () => shutdown('exit'));

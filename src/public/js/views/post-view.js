@@ -2,7 +2,7 @@
 import { enableSPAHyperlink } from '../util/link-util.js';
 
 export default (function() {
-  class ArticleView extends HTMLElement {
+  class PostView extends HTMLElement {
     static get observedAttributes() {
       return ['loading'];
     }
@@ -15,31 +15,31 @@ export default (function() {
 
       this.converter = new showdown.Converter(),
 
-      console.log('----article view', this.articles);
+      console.log('----Post view');
 
       this.setupEventListeners();
-      this.fetchArticle(this.id);
+      this.fetchCategoryItem(this.id);
       this.render();
     }
 
     setupEventListeners() {
-      this.addEventListener("article-loaded", (event) => {
-        console.log('---articles-loaded', event);
-        this.article =  event.detail;
+      this.addEventListener("post-loaded", (event) => {
+        console.log('---item-loaded', event);
+        this.post = event.detail;
         this.render();
 
-        this.shadowRoot.querySelectorAll('.article-link').forEach(articleLink => {
+        this.shadowRoot.querySelectorAll('.post-link').forEach(postLink => {
           console.log('enabling hyperlink');
-          enableSPAHyperlink(articleLink);
+          enableSPAHyperlink(postLink);
         });
       });
-  }
+    }
 
-    async fetchArticle(id) {
+    async fetchCategoryItem(id) {
       this.setAttribute('loading', true);
-      const response = await fetch(`/api/articles/${id}`);
+      const response = await fetch(`/api/posts/${id}`);
       const json = await response.json();
-      this.dispatchEvent(new CustomEvent('article-loaded', { detail: json }));
+      this.dispatchEvent(new CustomEvent('post-loaded', { detail: json }));
       this.setAttribute('loading', false);
       return json;
     }
@@ -53,9 +53,9 @@ export default (function() {
     }
 
     render() {
-      const { article } = this;
+      const { post } = this;
 
-      if(!article) {
+      if(!post) {
         return;
       }
 
@@ -70,15 +70,15 @@ export default (function() {
         </style>
         <article>
           <header>
-            <h2>${he.encode(article.title)}</h2>
-            <div class="date">${(new Date(article.date)).toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</div>
+            <h2>${he.encode(post.title)}</h2>
+            <div class="date">${(new Date(post.date)).toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</div>
           </header>
-          <main>${this.converter.makeHtml(article.markdown)}</main>
+          <main>${this.converter.makeHtml(post.markdown)}</main>
         </article>
       `;
     }
   }
 
   // let the browser know about the custom element
-  customElements.define('article-view', ArticleView);
+  customElements.define('post-view', PostView);
 })();

@@ -18,7 +18,7 @@ git pull
 git pull --recurse-submodules
 
 # update just the submodules
-git submodule update --recursive
+git submodule update --remote --merge
 ```
 
 ## Prior to npm installing

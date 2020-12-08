@@ -31,6 +31,10 @@ app.listen(port, () => {
   console.log(`Webhooks listening at http://localhost:${port}`)
 });
 
+app.get('/webhook', (req, res) => {
+  res.send("OK");
+});
+
 app.post('/webhook', (req, res) => {
   const xHubSignature = req.header('X-Hub-Signature');
   const host = req.header['X-Forwarded-Host'] || req.get('host');

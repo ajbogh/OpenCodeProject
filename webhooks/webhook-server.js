@@ -9,7 +9,7 @@ const process = require('process');
 let githubWebHook  = '';
 
 try {
-  const secrets = require(`${__dirname}/../config/secrets.js`);
+  const secrets = require('../config/secrets.js');
   githubWebHook = secrets.githubWebHook;
 } catch (e) {
   console.error('Could not find the `config/secrets.js` file. Make sure to copy the config/secrets.example.js file and configure your secrets.', e);

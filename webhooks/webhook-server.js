@@ -9,10 +9,10 @@ const process = require('process');
 let githubWebHook  = '';
 
 try {
-  const secrets = require('../config/secrets.js');
+  const secrets = require(`${__dirname}/../config/secrets.js`);
   githubWebHook = secrets.githubWebHook;
 } catch (e) {
-  console.error('Could not find the `config/secrets.js` file. Make sure to copy the config/secrets.example.js file and configure your secrets.');
+  console.error('Could not find the `config/secrets.js` file. Make sure to copy the config/secrets.example.js file and configure your secrets.', e);
   process.exit();
 }
 
@@ -27,7 +27,7 @@ app.use(bodyParser.urlencoded({ extended: false }))
 // parse application/json
 app.use(bodyParser.json())
 
-app.listen(port, () => {
+const server = app.listen(port, () => {
   console.log(`Webhooks listening at http://localhost:${port}`)
 });
 
@@ -107,3 +107,15 @@ app.post('/webhook', (req, res) => {
     res.status(200).end();
   });
 });
+
+// Do graceful shutdown
+function shutdown(type) {
+  console.log(`webhook: ${type} signal received: closing HTTP server`);
+  server.close(() => {
+    console.log('HTTP server closed')
+  });
+}
+
+process.on('SIGTERM', () => shutdown('SIGTERM'));
+process.on('SIGINT', () => shutdown('SIGINT'));
+process.on('exit', () => shutdown('exit'));

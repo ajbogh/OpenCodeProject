@@ -17,8 +17,8 @@ const routes = [
       {
         path: '/:id',
         action: (context) => {
-          import('./views/category-item-view.js');
-          return `<category-item-view category="${context.params.category}" id="${context.params.id}" />`;
+          import('./views/post-view.js');
+          return `<post-view category="${context.params.category}" id="${context.params.id}" />`;
         }
       }
     ]

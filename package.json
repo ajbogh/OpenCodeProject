@@ -12,7 +12,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "server": "node ./src/server/server.js",
-    "node-image-farmer": "node node-image-farmer/app/app.js --port=3002",
+    "node-image-farmer": "node node-image-farmer/app/app.js --port=3002 --imageDirectory='../../src/public/images'",
     "app": "run-p server node-image-farmer",
     "postinstall": "cd node-image-farmer && npm install && cd .."
   },

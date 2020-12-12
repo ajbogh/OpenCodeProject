@@ -11,8 +11,6 @@ export default (function() {
       // establish prototype chain
       super();
 
-      this.attachShadow({ mode: "open" });
-
       this.converter = new showdown.Converter(),
 
       console.log('----Post view');
@@ -59,7 +57,7 @@ export default (function() {
         return;
       }
 
-      this.shadowRoot.innerHTML = `
+      this.innerHTML = `
         <style>
           h2 {
             margin-bottom: 2px;

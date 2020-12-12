@@ -1,8 +1,10 @@
 const compression = require('compression');
 const express = require('express');
 const path = require('path');
+const { createProxyMiddleware } = require('http-proxy-middleware');
 const mockArticles = require('../../mocks/articles.js');
-const Logger = require('./logger.js')
+const Logger = require('./logger.js');
+
 
 const app = express();
 const port = 3000;
@@ -23,6 +25,11 @@ app.use((req, res, next) => {
 });
 
 app.use('/', express.static(path.join(__dirname, '/../public')));
+
+app.use('/content/smart/*', createProxyMiddleware({ 
+  target: 'http://localhost:3002', 
+  changeOrigin: true 
+}));
 
 app.get('/api/posts', (req, res) => {
   // TODO: make this a database call

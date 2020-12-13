@@ -34,9 +34,15 @@ app.use('/content/smart/*', createProxyMiddleware({
 app.get('/api/posts', (req, res) => {
   // TODO: make this a database call
   const { page = 0, limit = 10, sortBy = 'date', order = 'ASC', category } = req.query;
-  const totalPosts = mockArticles.length;
 
-  let sortedPosts = mockArticles.sort((a, b) => {
+  let sortedPosts = [];
+  if(category) {
+    sortedPosts  = mockArticles.filter(article => article.category === category);
+  }
+
+  const totalPosts = sortedPosts.length;
+
+  sortedPosts = sortedPosts.sort((a, b) => {
     return a[sortBy].localeCompare(b[sortBy], undefined, {ignorePunctuation: true});
   });
 
@@ -47,10 +53,6 @@ app.get('/api/posts', (req, res) => {
   sortedPosts = sortedPosts.slice(page * limit, (page * limit) + limit);
 
   console.log(category, sortedPosts);
-
-  if(category) {
-    sortedPosts  = sortedPosts.filter(article => article.category === category);
-  }
 
   res.json({
     posts: sortedPosts,

@@ -14,15 +14,26 @@
     "server": "node ./src/server/server.js",
     "node-image-farmer": "node node-image-farmer/app/app.js --port=3002 --imageDirectory='../../src/public/images'",
     "app": "run-p server node-image-farmer",
+    "docker:mysql": "docker stack deploy -c stack.yml mysql",
+    "scripts:mysql-import": "node src/scripts/mysql-import-db.js",
+    "scripts:mysql-export": "node src/scripts/mysql-export-db.js",
+    "setup": "npm run scripts:mysql-import",
+    "backup": "npm run scripts:mysql-export",
+    "dev": "NODE_ENV=development npm run docker:mysql && npm run app",
     "postinstall": "cd node-image-farmer && npm install && cd .."
   },
   "devDependencies": {
+    "better-opn": "^3.0.0",
+    "mysql-import": "^5.0.21",
     "npm-run-all": "^4.1.5"
   },
   "dependencies": {
     "body-parser": "^1.19.0",
     "compression": "^1.7.4",
     "express": "^4.17.1",
-    "http-proxy-middleware": "^1.0.6"
+    "http-proxy-middleware": "^1.0.6",
+    "mysql": "^2.18.1",
+    "mysqldump": "^3.2.0",
+    "uuid": "^8.3.2"
   }
 }

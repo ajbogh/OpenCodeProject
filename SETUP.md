@@ -48,5 +48,41 @@ Make sure the server starts with pm2 using the instructions in [the pm2 README](
 
 Copy the [config/secrets.example.js](config/secrets.example.js) file to `config/secrets.js`. Add your Github webhook secret to the file.
 
+## Docker
+
+Docker will use a swarm for future flexibility. Some commands are listed below to start the swarm and list the relevant information later if you need it.
+
+We will use the docker stack command to deploy the services.
+
+```bash
+# Start swarm if not already started
+docker swarm init
+# Manage swarm nodes: https://docs.docker.com/engine/swarm/manage-nodes/
+# Retrieve join command for worker nodes 
+docker swarm join-token worker
+# View join command and token for manager nodes
+docker swarm join-token manager
+
+# Start database
+docker stack deploy -c stack.yml mysql
+```
+
+## Database
+
+Once Docker is running, run the database install script.
+
+```
+npm run setup
+```
+
+To back up the database, run the backup script.
+
+```
+npm run backup
+```
+
+Copy the src/database files to a backup location. They can be restored later by copying them back to the same location and running the `setup` script from above.
 
 
+The open PHPMyAdmin: http://localhost:8080
+Or use MySQL administration programs to connect to localhost:3306 using your configured username and password.

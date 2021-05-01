@@ -36,6 +36,19 @@ const routes = [
       }
     ]
   },
+  {
+    path: '/admin',
+    action: () => console.log('checking child routes for /admin'),
+    children: [
+      {
+        path: '',
+        action: () => {
+          import('./views/admin-view.js');
+          return `<admin-view />`;
+        }
+      }
+    ]
+  },
 ];
 
 const router = new UniversalRouter(routes);

@@ -20,7 +20,7 @@ export default (function() {
     setupEventListeners() {
       this.addEventListener("categories-loaded", (event) => {
         console.log('---categories-loaded', event);
-        this.categoryMap =  event.detail;
+        this.categoryArr =  event.detail;
         this.render(this);
 
         this.querySelectorAll('.category-link').forEach(categoryLink => {
@@ -44,20 +44,19 @@ export default (function() {
     }
 
     render(el) {
-      const { categoryMap } = el;
+      const { categoryArr } = el;
       const titleElem = document.createElement('h6');
       titleElem.innerText = "Categories";
 
       const ul = document.createElement('ul');
-      const categoryArr = categoryMap ? 
-        Object.keys(categoryMap).sort((a, b) => a.localeCompare(b)) : 
-        [];
 
-      categoryArr.forEach(category => {
+      categoryArr.forEach(categoryObj => {
+        const { category, count } = categoryObj;
         const li = document.createElement('li');
+
         li.innerHTML =  `
           <a class="category-link" href="/category/${encodeURIComponent(category)}">${he.encode(category)}</a>${' '}
-          <span>(${categoryMap[category]})</span>
+          <span>(${count})</span>
         `;
 
         ul.appendChild(li);

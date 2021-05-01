@@ -69,7 +69,7 @@ export default (function() {
         <article>
           <header>
             <h2>${he.encode(post.title)}</h2>
-            <div class="date">${(new Date(post.date)).toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</div>
+            <div class="date">${(new Date(post.created_datetime)).toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</div>
           </header>
           <main>${this.converter.makeHtml(post.markdown)}</main>
         </article>

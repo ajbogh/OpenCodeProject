@@ -26,10 +26,10 @@ export default (function() {
       this.addEventListener("category-loaded", (event) => {
         console.log('---category-loaded', event);
         this.posts =  event.detail.posts;
-        this.total =  event.detail.total;
+        this.total =  event.detail.count;
         this.render(this);
 
-        this.querySelectorAll('.category-link').forEach(postLink => {
+        this.querySelectorAll('.post-link').forEach(postLink => {
           console.log('enabling hyperlink');
           enableSPAHyperlink(postLink);
         });
@@ -38,7 +38,7 @@ export default (function() {
 
     async fetchData() {
       this.setAttribute('loading', true);
-      const response = await fetch(`/api/posts?sortBy=date&order=DESC&category=${this.category}`);
+      const response = await fetch(`/api/posts?order=DESC&category=${this.category}`);
       const json = await response.json();
       this.dispatchEvent(new CustomEvent('category-loaded', { detail: json }));
       this.setAttribute('loading', false);
@@ -65,8 +65,9 @@ export default (function() {
         li.classList.add('post-list-item');
         li.innerHTML =  `
           <h2 class="post-title"><a class="post-link" href="/category/${encodeURIComponent(this.category)}/${post.id}">${he.encode(post.title)}</a></h2>
-          <div class="post-author">Author: ${post.author}</div>
-          <div class="post-date">Updated on: ${(new Date(post.date)).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}</div>
+          <div class="post-author">Author: <a class="post-link" href="/authors/${post.author}">${post.display_name}</a></div>
+          <div class="post-date">Created on: ${(new Date(post.created_datetime)).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}</div>
+          ${post.updated_datetime && `<div class="post-date">Updated on: ${(new Date(post.updated_datetime)).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}</div>` || ''}
           <div>${this.converter.makeHtml(post.markdown)}</div>
         `;
 

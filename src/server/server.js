@@ -2,9 +2,12 @@ const compression = require('compression');
 const express = require('express');
 const path = require('path');
 const { createProxyMiddleware } = require('http-proxy-middleware');
+const opn = require('better-opn');
 const mockArticles = require('../../mocks/articles.js');
 const Logger = require('./logger.js');
-
+const db = require('./datalayer/connect');
+const posts = require('./datalayer/posts');
+require('./helpers/error.js');
 
 const app = express();
 const port = 3000;
@@ -16,7 +19,12 @@ function send404(req, res) {
 }
 
 const server = app.listen(port, () => {
-  console.log(`Listening at http://localhost:${port}`)
+  const url = `http://localhost:${port}`;
+  console.log(`Listening at ${url}`);
+
+  if(process.env.NODE_ENV === 'development') {
+    opn(url);
+  }
 });
 
 app.use((req, res, next) => {
@@ -25,63 +33,102 @@ app.use((req, res, next) => {
 });
 
 app.use('/', express.static(path.join(__dirname, '/../public')));
+app.use('/config', express.static(path.join(__dirname, '/../../config')));
 
 app.use('/content/smart/*', createProxyMiddleware({ 
   target: 'http://localhost:3002', 
   changeOrigin: true 
 }));
 
-app.get('/api/posts', (req, res) => {
-  // TODO: make this a database call
-  const { page = 0, limit = 10, sortBy = 'date', order = 'ASC', category } = req.query;
-
-  let sortedPosts = [];
-  if(category) {
-    sortedPosts  = mockArticles.filter(article => article.category === category);
+app.get('/api/categories', async (req, res) => {
+  
+  let categories;
+  try {
+    categories = await(posts.getCategories());
+  } catch (err) {
+    res.status(500).send(err);
   }
 
-  const totalPosts = sortedPosts.length;
+  res.json(categories);
+});
 
-  sortedPosts = sortedPosts.sort((a, b) => {
-    return a[sortBy].localeCompare(b[sortBy], undefined, {ignorePunctuation: true});
-  });
+app.get('/api/posts', async (req, res, next) => {
+  const { page = 0, limit = 10, sortBy = 'created_datetime', order = 'ASC', category } = req.query;
+  const maxCharacters = 100;
 
-  if(order === 'DESC') {
-    sortedPosts.reverse();
+  let postsForCategory;
+  try {
+    postsForCategory = await posts.getPostsForCategory(category, sortBy, order, limit, page);
+
+    // For each post find the substring "---more---", or the first paragraph, and select characters prior
+    postsForCategory = postsForCategory.posts.map((post) => {
+      const { markdown } = post;
+      let breakIndex = markdown.search('---more---');
+      if(breakIndex === -1) {
+        breakIndex = markdown.search(/\r?\n\r?\n/);
+      }
+      if(breakIndex === -1) {
+        breakIndex = maxCharacters;
+      }
+
+      return {
+        ...post,
+        markdown: markdown.substring(0, breakIndex),
+      };
+    });
+  } catch (err) {
+    console.log(err);
+    res.status(500).send(err.toJSON());
+    return;
   }
 
-  sortedPosts = sortedPosts.slice(page * limit, (page * limit) + limit);
-
-  console.log(category, sortedPosts);
+  let postsCount;
+  try {
+    postsCount = posts.getPostsCount(category);
+  } catch (err) {
+    console.log(err);
+    res.status(500).send(err.toJSON());
+    return;
+  }
 
   res.json({
-    posts: sortedPosts,
-    page, 
+    posts: postsForCategory,
+    category,
+    page,
     limit,
     order,
     sortBy,
-    count: sortedPosts.length,
-    total: totalPosts,
+    count: postsForCategory.length,
+    total: postsCount.total,
   });
 });
 
-app.get('/api/categories', (req, res) => {
-  // TODO: make this a database call
-  const categoryMap = {};
-
-  mockArticles.forEach(({ category }) => {
-    if(categoryMap[category]) {
-      categoryMap[category]++;
-    } else{
-      categoryMap[category] = 1;
-    }
-  });
-
-  res.json(categoryMap);
+app.get('/api/posts/:id', async (req, res, next) => {
+  const { id } = req.params;
+  try {
+    const post = await posts.getPost(id);
+    res.json(post);
+  } catch (err) {
+    console.log(err);
+    res.status(500).send(err.toJSON());
+    return;
+  }
 });
 
-app.get('/api/posts/:id', (req, res) => {
-  res.json(mockArticles.find(article => +article.id === +req.params.id));
+// create a new post
+app.post('/api/admin/posts', (req, res) => {
+  var postsRef = ref.child("posts");
+
+  postsRef.set({
+    test: {
+      hello: true
+    },
+  });  
+});
+
+// create a new user
+app.post('/api/admin/users', (req, res) => {
+
 });
 
 app.get('*', (req, res) => {
@@ -96,6 +143,15 @@ function shutdown(type) {
   console.log(`${type} signal received: closing HTTP server`);
   server.close(() => {
     console.log('HTTP server closed')
+  });
+  
+  db.end(err => {
+    if(err) {
+      console.log('Database connection failed to close');
+      console.error(err);
+    }
+    
+    console.log('Database connection closed')
   });
 }
 
